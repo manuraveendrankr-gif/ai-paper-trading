@@ -1,0 +1,53 @@
+{
+  "strategies": [
+    {
+      "name": "Conservative SMA Crossover",
+      "type": "sma_crossover",
+      "symbol": "NIFTY 50",
+      "shortPeriod": 20,
+      "longPeriod": 50,
+      "positionSize": 5,
+      "initialCapital": 1000000,
+      "description": "Conservative strategy using 20/50 SMA crossover with 5% position sizing"
+    },
+    {
+      "name": "Aggressive SMA Crossover",
+      "type": "sma_crossover",
+      "symbol": "NIFTY BANK",
+      "shortPeriod": 5,
+      "longPeriod": 20,
+      "positionSize": 15,
+      "initialCapital": 1000000,
+      "description": "Aggressive strategy with faster signals and larger position size"
+    },
+    {
+      "name": "RSI Mean Reversion",
+      "type": "rsi",
+      "symbol": "SENSEX",
+      "rsiPeriod": 14,
+      "oversold": 30,
+      "overbought": 70,
+      "positionSize": 10,
+      "initialCapital": 1000000,
+      "description": "Classic RSI mean reversion strategy"
+    },
+    {
+      "name": "MACD Trend Following",
+      "type": "macd",
+      "symbol": "NIFTY IT",
+      "positionSize": 12,
+      "initialCapital": 1000000,
+      "description": "Trend following strategy using MACD crossovers"
+    },
+    {
+      "name": "Bank Nifty Day Trading",
+      "type": "sma_crossover",
+      "symbol": "NIFTY BANK",
+      "shortPeriod": 10,
+      "longPeriod": 30,
+      "positionSize": 20,
+      "initialCapital": 500000,
+      "description": "Day trading strategy for Bank Nifty with higher risk"
+    }
+  ]
+}

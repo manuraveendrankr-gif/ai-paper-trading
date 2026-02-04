@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradeForge - Advanced Indian Markets Trading Platform</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.1/dist/umd/lucide.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #141824;
+            --bg-tertiary: #1a1f2e;
+            --accent-green: #00ff88;
+            --accent-red: #ff3366;
+            --accent-blue: #00d4ff;
+            --accent-purple: #b066ff;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+            --border-color: #2d3748;
+        }
+
+        body {
+            font-family: 'Instrument Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: radial-gradient(circle at 50% 0%, rgba(0, 255, 136, 0.1), transparent);
+            pointer-events: none;
+        }
+
+        .logo {
+            padding: 24px;
+            font-size: 24px;
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-menu {
+            flex: 1;
+            padding: 12px;
+        }
+
+        .nav-item {
+            padding: 14px 16px;
+            margin-bottom: 4px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 212, 255, 0.1));
+            color: var(--accent-green);
+            border-left: 3px solid var(--accent-green);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .market-status {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .balance-display {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            padding: 12px 20px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+        }
+
+        .balance-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .balance-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .balance-value {
+            font-size: 18px;
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .balance-value.positive {
+            color: var(--accent-green);
+        }
+
+        .balance-value.negative {
+            color: var(--accent-red);
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 32px;
+        }
+
+        /* Strategy Builder */
+        .strategy-builder {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .strategy-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .form-input, .form-select {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-family: 'Instrument Sans', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-primary);
+        }
+
+        .btn-danger {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        /* Grid Layout */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-green), var(--accent-blue), var(--accent-purple));
+        }
+
+        .metric-card {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+            margin-bottom: 8px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: var(--bg-tertiary);
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+
+        .data-table tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .symbol-cell {
+            font-weight: 600;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .price-positive {
+            color: var(--accent-green);
+        }
+
+        .price-negative {
+            color: var(--accent-red);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            margin-top: 20px;
+            height: 300px;
+            position: relative;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: var(--accent-green);
+            border-bottom-color: var(--accent-green);
+        }
+
+        /* Code Editor */
+        .code-editor {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Space Mono', monospace;
+            font-size: 13px;
+            color: var(--accent-green);
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-success {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--accent-green);
+        }
+
+        .badge-danger {
+            background: rgba(255, 51, 102, 0.2);
+            color: var(--accent-red);
+        }
+
+        .badge-info {
+            background: rgba(0, 212, 255, 0.2);
+            color: var(--accent-blue);
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-green);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Alert */
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert-success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: var(--accent-green);
+        }
+
+        .alert-error {
+            background: rgba(255, 51, 102, 0.1);
+            border: 1px solid rgba(255, 51, 102, 0.3);
+            color: var(--accent-red);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 24px;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+        }
+
+        .close-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Mock NSE/BSE Data Service
+        const MarketDataService = {
+            // Simulated real-time data for NSE/BSE indices and derivatives
+            getIndices: () => {
+                return [
+                    { symbol: 'NIFTY 50', price: 21850.75, change: 145.30, changePercent: 0.67, exchange: 'NSE' },
+                    { symbol: 'NIFTY BANK', price: 46234.80, change: -234.50, changePercent: -0.51, exchange: 'NSE' },
+                    { symbol: 'SENSEX', price: 72456.32, change: 289.45, changePercent: 0.40, exchange: 'BSE' },
+                    { symbol: 'NIFTY IT', price: 34567.20, change: 456.30, changePercent: 1.34, exchange: 'NSE' },
+                    { symbol: 'NIFTY AUTO', price: 18234.50, change: -123.40, changePercent: -0.67, exchange: 'NSE' },
+                ];
+            },
+
+            getDerivatives: () => {
+                return [
+                    { symbol: 'NIFTY 22000 CE', strike: 22000, type: 'CE', expiry: '29-FEB-2026', ltp: 234.50, change: 12.30, oi: 45600, volume: 123456 },
+                    { symbol: 'NIFTY 21800 PE', strike: 21800, type: 'PE', expiry: '29-FEB-2026', ltp: 178.25, change: -8.75, oi: 67800, volume: 98765 },
+                    { symbol: 'BANKNIFTY 46500 CE', strike: 46500, type: 'CE', expiry: '05-MAR-2026', ltp: 567.80, change: -23.40, oi: 34500, volume: 76543 },
+                    { symbol: 'BANKNIFTY 46000 PE', strike: 46000, type: 'PE', expiry: '05-MAR-2026', ltp: 489.30, change: 34.20, oi: 56700, volume: 54321 },
+                ];
+            },
+
+            // Simulated historical data for backtesting
+            getHistoricalData: (symbol, days = 365) => {
+                const data = [];
+                let price = 21000;
+                const today = new Date();
+                
+                for (let i = days; i >= 0; i--) {
+                    const date = new Date(today);
+                    date.setDate(date.getDate() - i);
+                    
+                    // Random walk simulation
+                    const change = (Math.random() - 0.48) * 200;
+                    price += change;
+                    
+                    data.push({
+                        date: date.toISOString().split('T')[0],
+                        open: price - Math.random() * 50,
+                        high: price + Math.random() * 100,
+                        low: price - Math.random() * 100,
+                        close: price,
+                        volume: Math.floor(Math.random() * 10000000) + 5000000,
+                    });
+                }
+                
+                return data;
+            },
+        };
+
+        // Strategy Backtester
+        const StrategyBacktester = {
+            backtest: (strategy, historicalData) => {
+                let capital = strategy.initialCapital;
+                let position = null;
+                const trades = [];
+                let totalPnL = 0;
+                let winningTrades = 0;
+                let losingTrades = 0;
+
+                historicalData.forEach((candle, index) => {
+                    if (index === 0) return;
+
+                    const prevCandle = historicalData[index - 1];
+
+                    // Simple Moving Average Crossover Strategy
+                    if (strategy.type === 'sma_crossover') {
+                        const shortSMA = this.calculateSMA(historicalData.slice(Math.max(0, index - strategy.shortPeriod), index), 'close');
+                        const longSMA = this.calculateSMA(historicalData.slice(Math.max(0, index - strategy.longPeriod), index), 'close');
+                        const prevShortSMA = this.calculateSMA(historicalData.slice(Math.max(0, index - strategy.shortPeriod - 1), index - 1), 'close');
+                        const prevLongSMA = this.calculateSMA(historicalData.slice(Math.max(0, index - strategy.longPeriod - 1), index - 1), 'close');
+
+                        // Buy Signal
+                        if (!position && shortSMA > longSMA && prevShortSMA <= prevLongSMA) {
+                            const quantity = Math.floor(capital * (strategy.positionSize / 100) / candle.close);
+                            position = {
+                                type: 'long',
+                                entryPrice: candle.close,
+                                quantity: quantity,
+                                entryDate: candle.date,
+                            };
+                        }
+                        // Sell Signal
+                        else if (position && shortSMA < longSMA && prevShortSMA >= prevLongSMA) {
+                            const pnl = (candle.close - position.entryPrice) * position.quantity;
+                            totalPnL += pnl;
+                            capital += pnl;
+
+                            if (pnl > 0) winningTrades++;
+                            else losingTrades++;
+
+                            trades.push({
+                                entryDate: position.entryDate,
+                                exitDate: candle.date,
+                                entryPrice: position.entryPrice,
+                                exitPrice: candle.close,
+                                quantity: position.quantity,
+                                pnl: pnl,
+                                pnlPercent: (pnl / (position.entryPrice * position.quantity)) * 100,
+                            });
+
+                            position = null;
+                        }
+                    }
+                });
+
+                // Close any open position at the end
+                if (position) {
+                    const lastCandle = historicalData[historicalData.length - 1];
+                    const pnl = (lastCandle.close - position.entryPrice) * position.quantity;
+                    totalPnL += pnl;
+                    capital += pnl;
+
+                    if (pnl > 0) winningTrades++;
+                    else losingTrades++;
+
+                    trades.push({
+                        entryDate: position.entryDate,
+                        exitDate: lastCandle.date,
+                        entryPrice: position.entryPrice,
+                        exitPrice: lastCandle.close,
+                        quantity: position.quantity,
+                        pnl: pnl,
+                        pnlPercent: (pnl / (position.entryPrice * position.quantity)) * 100,
+                    });
+                }
+
+                const winRate = trades.length > 0 ? (winningTrades / trades.length) * 100 : 0;
+                const avgWin = winningTrades > 0 ? trades.filter(t => t.pnl > 0).reduce((sum, t) => sum + t.pnl, 0) / winningTrades : 0;
+                const avgLoss = losingTrades > 0 ? trades.filter(t => t.pnl < 0).reduce((sum, t) => sum + t.pnl, 0) / losingTrades : 0;
+
+                return {
+                    finalCapital: capital,
+                    totalPnL: totalPnL,
+                    totalTrades: trades.length,
+                    winningTrades: winningTrades,
+                    losingTrades: losingTrades,
+                    winRate: winRate,
+                    avgWin: avgWin,
+                    avgLoss: avgLoss,
+                    profitFactor: avgLoss !== 0 ? Math.abs(avgWin / avgLoss) : 0,
+                    trades: trades,
+                };
+            },
+
+            calculateSMA: (data, field) => {
+                if (data.length === 0) return 0;
+                const sum = data.reduce((acc, candle) => acc + candle[field], 0);
+                return sum / data.length;
+            },
+        };
+
+        // Main App Component
+        function TradingPlatform() {
+            const [activeTab, setActiveTab] = useState('dashboard');
+            const [indices, setIndices] = useState([]);
+            const [derivatives, setDerivatives] = useState([]);
+            const [strategies, setStrategies] = useState([]);
+            const [backtestResults, setBacktestResults] = useState(null);
+            const [paperTradingActive, setPaperTradingActive] = useState(false);
+            const [portfolioValue, setPortfolioValue] = useState(1000000);
+            const [totalPnL, setTotalPnL] = useState(0);
+            const [positions, setPositions] = useState([]);
+            const [showStrategyModal, setShowStrategyModal] = useState(false);
+
+            useEffect(() => {
+                // Simulate real-time data updates
+                const interval = setInterval(() => {
+                    setIndices(MarketDataService.getIndices());
+                    setDerivatives(MarketDataService.getDerivatives());
+                }, 3000);
+
+                // Initial load
+                setIndices(MarketDataService.getIndices());
+                setDerivatives(MarketDataService.getDerivatives());
+
+                return () => clearInterval(interval);
+            }, []);
+
+            const createStrategy = (strategyData) => {
+                const newStrategy = {
+                    id: Date.now(),
+                    ...strategyData,
+                    createdAt: new Date().toISOString(),
+                };
+                setStrategies([...strategies, newStrategy]);
+                setShowStrategyModal(false);
+            };
+
+            const runBacktest = (strategy) => {
+                const historicalData = MarketDataService.getHistoricalData(strategy.symbol, 365);
+                const results = StrategyBacktester.backtest(strategy, historicalData);
+                setBacktestResults(results);
+            };
+
+            const startPaperTrading = () => {
+                setPaperTradingActive(true);
+                setPortfolioValue(1000000);
+                setTotalPnL(0);
+                setPositions([]);
+            };
+
+            return (
+                <div className="app-container">
+                    <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+                    <div className="main-content">
+                        <Header 
+                            portfolioValue={portfolioValue} 
+                            totalPnL={totalPnL}
+                            paperTradingActive={paperTradingActive}
+                        />
+                        <div className="content-area">
+                            {activeTab === 'dashboard' && (
+                                <Dashboard 
+                                    indices={indices} 
+                                    derivatives={derivatives}
+                                    portfolioValue={portfolioValue}
+                                    totalPnL={totalPnL}
+                                    positions={positions}
+                                />
+                            )}
+                            {activeTab === 'strategy-builder' && (
+                                <StrategyBuilder 
+                                    strategies={strategies}
+                                    createStrategy={createStrategy}
+                                    showModal={showStrategyModal}
+                                    setShowModal={setShowStrategyModal}
+                                />
+                            )}
+                            {activeTab === 'backtest' && (
+                                <BacktestPanel 
+                                    strategies={strategies}
+                                    runBacktest={runBacktest}
+                                    results={backtestResults}
+                                />
+                            )}
+                            {activeTab === 'paper-trading' && (
+                                <PaperTrading 
+                                    active={paperTradingActive}
+                                    startTrading={startPaperTrading}
+                                    indices={indices}
+                                    positions={positions}
+                                    setPositions={setPositions}
+                                    portfolioValue={portfolioValue}
+                                    setPortfolioValue={setPortfolioValue}
+                                    totalPnL={totalPnL}
+                                    setTotalPnL={setTotalPnL}
+                                />
+                            )}
+                            {activeTab === 'forward-test' && (
+                                <ForwardTest 
+                                    strategies={strategies}
+                                    indices={indices}
+                                />
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Sidebar Component
+        function Sidebar({ activeTab, setActiveTab }) {
+            const menuItems = [
+                { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
+                { id: 'strategy-builder', label: 'Strategy Builder', icon: 'Layers' },
+                { id: 'backtest', label: 'Backtest', icon: 'TrendingUp' },
+                { id: 'paper-trading', label: 'Paper Trading', icon: 'Wallet' },
+                { id: 'forward-test', label: 'Forward Test', icon: 'Play' },
+            ];
+
+            return (
+                <div className="sidebar">
+                    <div className="logo">TradeForge</div>
+                    <div className="nav-menu">
+                        {menuItems.map(item => (
+                            <div
+                                key={item.id}
+                                className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
+                                onClick={() => setActiveTab(item.id)}
+                            >
+                                <i data-lucide={item.icon} className="nav-icon"></i>
+                                {item.label}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        // Header Component
+        function Header({ portfolioValue, totalPnL, paperTradingActive }) {
+            return (
+                <div className="header">
+                    <div className="market-status">
+                        <div className="status-item">
+                            <div className="status-dot"></div>
+                            <span>Market Open</span>
+                        </div>
+                        <div className="status-item">
+                            <span>NSE/BSE Live</span>
+                        </div>
+                    </div>
+                    <div className="balance-display">
+                        <div className="balance-item">
+                            <div className="balance-label">Portfolio</div>
+                            <div className="balance-value">₹{portfolioValue.toLocaleString('en-IN')}</div>
+                        </div>
+                        <div className="balance-item">
+                            <div className="balance-label">P&L</div>
+                            <div className={`balance-value ${totalPnL >= 0 ? 'positive' : 'negative'}`}>
+                                {totalPnL >= 0 ? '+' : ''}₹{totalPnL.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                            </div>
+                        </div>
+                        {paperTradingActive && (
+                            <span className="badge badge-info">Paper Trading Active</span>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // Dashboard Component
+        function Dashboard({ indices, derivatives, portfolioValue, totalPnL, positions }) {
+            useEffect(() => {
+                lucide.createIcons();
+            }, []);
+
+            return (
+                <div>
+                    <h2 className="section-title">
+                        <i data-lucide="activity"></i>
+                        Market Overview
+                    </h2>
+
+                    <div className="grid-3" style={{ marginBottom: '24px' }}>
+                        <div className="card metric-card">
+                            <div className="metric-value">₹{portfolioValue.toLocaleString('en-IN')}</div>
+                            <div className="metric-label">Portfolio Value</div>
+                        </div>
+                        <div className="card metric-card">
+                            <div className={`metric-value ${totalPnL >= 0 ? 'price-positive' : 'price-negative'}`}>
+                                {totalPnL >= 0 ? '+' : ''}₹{totalPnL.toLocaleString('en-IN')}
+                            </div>
+                            <div className="metric-label">Total P&L</div>
+                        </div>
+                        <div className="card metric-card">
+                            <div className="metric-value">{positions.length}</div>
+                            <div className="metric-label">Active Positions</div>
+                        </div>
+                    </div>
+
+                    <div className="grid-2">
+                        <div className="card">
+                            <h3 className="section-title">
+                                <i data-lucide="trending-up"></i>
+                                Indices
+                            </h3>
+                            <div className="table-container">
+                                <table className="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Symbol</th>
+                                            <th>Exchange</th>
+                                            <th>Price</th>
+                                            <th>Change</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {indices.map((index, i) => (
+                                            <tr key={i}>
+                                                <td className="symbol-cell">{index.symbol}</td>
+                                                <td>{index.exchange}</td>
+                                                <td>₹{index.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                                                <td className={index.change >= 0 ? 'price-positive' : 'price-negative'}>
+                                                    {index.change >= 0 ? '+' : ''}{index.change.toFixed(2)} ({index.changePercent.toFixed(2)}%)
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div className="card">
+                            <h3 className="section-title">
+                                <i data-lucide="bar-chart-3"></i>
+                                Derivatives
+                            </h3>
+                            <div className="table-container">
+                                <table className="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Symbol</th>
+                                            <th>Type</th>
+                                            <th>LTP</th>
+                                            <th>OI</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {derivatives.map((derivative, i) => (
+                                            <tr key={i}>
+                                                <td className="symbol-cell">{derivative.symbol}</td>
+                                                <td>
+                                                    <span className={`badge ${derivative.type === 'CE' ? 'badge-success' : 'badge-danger'}`}>
+                                                        {derivative.type}
+                                                    </span>
+                                                </td>
+                                                <td className={derivative.change >= 0 ? 'price-positive' : 'price-negative'}>
+                                                    ₹{derivative.ltp.toFixed(2)}
+                                                </td>
+                                                <td>{derivative.oi.toLocaleString('en-IN')}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Strategy Builder Component
+        function StrategyBuilder({ strategies, createStrategy, showModal, setShowModal }) {
+            const [formData, setFormData] = useState({
+                name: '',
+                type: 'sma_crossover',
+                symbol: 'NIFTY 50',
+                shortPeriod: 10,
+                longPeriod: 50,
+                positionSize: 10,
+                initialCapital: 1000000,
+            });
+
+            useEffect(() => {
+                lucide.createIcons();
+            }, [strategies]);
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                createStrategy(formData);
+                setFormData({
+                    name: '',
+                    type: 'sma_crossover',
+                    symbol: 'NIFTY 50',
+                    shortPeriod: 10,
+                    longPeriod: 50,
+                    positionSize: 10,
+                    initialCapital: 1000000,
+                });
+            };
+
+            return (
+                <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                        <h2 className="section-title">
+                            <i data-lucide="layers"></i>
+                            Strategy Builder
+                        </h2>
+                        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+                            <i data-lucide="plus"></i>
+                            Create Strategy
+                        </button>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="section-title">Your Strategies</h3>
+                        {strategies.length === 0 ? (
+                            <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                                <p>No strategies created yet. Click "Create Strategy" to get started.</p>
+                            </div>
+                        ) : (
+                            <div className="table-container">
+                                <table className="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Symbol</th>
+                                            <th>Parameters</th>
+                                            <th>Created</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {strategies.map((strategy) => (
+                                            <tr key={strategy.id}>
+                                                <td className="symbol-cell">{strategy.name}</td>
+                                                <td>{strategy.type}</td>
+                                                <td>{strategy.symbol}</td>
+                                                <td>Short: {strategy.shortPeriod}, Long: {strategy.longPeriod}</td>
+                                                <td>{new Date(strategy.createdAt).toLocaleDateString()}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+
+                    {showModal && (
+                        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+                            <div className="modal" onClick={(e) => e.stopPropagation()}>
+                                <div className="modal-header">
+                                    <h3 className="modal-title">Create New Strategy</h3>
+                                    <button className="close-btn" onClick={() => setShowModal(false)}>×</button>
+                                </div>
+
+                                <form onSubmit={handleSubmit}>
+                                    <div className="strategy-form">
+                                        <div className="form-group">
+                                            <label className="form-label">Strategy Name</label>
+                                            <input
+                                                type="text"
+                                                className="form-input"
+                                                value={formData.name}
+                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label className="form-label">Strategy Type</label>
+                                            <select
+                                                className="form-select"
+                                                value={formData.type}
+                                                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                            >
+                                                <option value="sma_crossover">SMA Crossover</option>
+                                                <option value="rsi">RSI Strategy</option>
+                                                <option value="macd">MACD Strategy</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label className="form-label">Symbol</label>
+                                            <select
+                                                className="form-select"
+                                                value={formData.symbol}
+                                                onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
+                                            >
+                                                <option value="NIFTY 50">NIFTY 50</option>
+                                                <option value="NIFTY BANK">NIFTY BANK</option>
+                                                <option value="SENSEX">SENSEX</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label className="form-label">Short Period</label>
+                                            <input
+                                                type="number"
+                                                className="form-input"
+                                                value={formData.shortPeriod}
+                                                onChange={(e) => setFormData({ ...formData, shortPeriod: parseInt(e.target.value) })}
+                                                min="1"
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label className="form-label">Long Period</label>
+                                            <input
+                                                type="number"
+                                                className="form-input"
+                                                value={formData.longPeriod}
+                                                onChange={(e) => setFormData({ ...formData, longPeriod: parseInt(e.target.value) })}
+                                                min="1"
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label className="form-label">Position Size (%)</label>
+                                            <input
+                                                type="number"
+                                                className="form-input"
+                                                value={formData.positionSize}
+                                                onChange={(e) => setFormData({ ...formData, positionSize: parseInt(e.target.value) })}
+                                                min="1"
+                                                max="100"
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className="form-group">
+                                            <label className="form-label">Initial Capital (₹)</label>
+                                            <input
+                                                type="number"
+                                                className="form-input"
+                                                value={formData.initialCapital}
+                                                onChange={(e) => setFormData({ ...formData, initialCapital: parseInt(e.target.value) })}
+                                                min="10000"
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div style={{ marginTop: '24px', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                                        <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>
+                                            Cancel
+                                        </button>
+                                        <button type="submit" className="btn btn-primary">
+                                            Create Strategy
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // Backtest Panel Component
+        function BacktestPanel({ strategies, runBacktest, results }) {
+            const [selectedStrategy, setSelectedStrategy] = useState(null);
+
+            useEffect(() => {
+                lucide.createIcons();
+            }, [results]);
+
+            return (
+                <div>
+                    <h2 className="section-title">
+                        <i data-lucide="trending-up"></i>
+                        Backtest Engine
+                    </h2>
+
+                    <div className="card" style={{ marginBottom: '24px' }}>
+                        <h3 className="section-title">Select Strategy to Backtest</h3>
+                        <div className="strategy-form">
+                            <div className="form-group">
+                                <label className="form-label">Strategy</label>
+                                <select
+                                    className="form-select"
+                                    onChange={(e) => setSelectedStrategy(strategies.find(s => s.id === parseInt(e.target.value)))}
+                                    defaultValue=""
+                                >
+                                    <option value="" disabled>Select a strategy</option>
+                                    {strategies.map(strategy => (
+                                        <option key={strategy.id} value={strategy.id}>
+                                            {strategy.name} ({strategy.type})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => selectedStrategy && runBacktest(selectedStrategy)}
+                                disabled={!selectedStrategy}
+                            >
+                                <i data-lucide="play"></i>
+                                Run Backtest
+                            </button>
+                        </div>
+                    </div>
+
+                    {results && (
+                        <div>
+                            <div className="grid-3" style={{ marginBottom: '24px' }}>
+                                <div className="card metric-card">
+                                    <div className={`metric-value ${results.totalPnL >= 0 ? 'price-positive' : 'price-negative'}`}>
+                                        {results.totalPnL >= 0 ? '+' : ''}₹{results.totalPnL.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                    </div>
+                                    <div className="metric-label">Total P&L</div>
+                                </div>
+                                <div className="card metric-card">
+                                    <div className="metric-value price-positive">{results.winRate.toFixed(2)}%</div>
+                                    <div className="metric-label">Win Rate</div>
+                                </div>
+                                <div className="card metric-card">
+                                    <div className="metric-value">{results.totalTrades}</div>
+                                    <div className="metric-label">Total Trades</div>
+                                </div>
+                            </div>
+
+                            <div className="grid-2">
+                                <div className="card">
+                                    <h3 className="section-title">Performance Metrics</h3>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span className="form-label">Final Capital</span>
+                                            <span className="symbol-cell">₹{results.finalCapital.toLocaleString('en-IN')}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span className="form-label">Winning Trades</span>
+                                            <span className="price-positive">{results.winningTrades}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span className="form-label">Losing Trades</span>
+                                            <span className="price-negative">{results.losingTrades}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span className="form-label">Average Win</span>
+                                            <span className="price-positive">₹{results.avgWin.toFixed(2)}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span className="form-label">Average Loss</span>
+                                            <span className="price-negative">₹{results.avgLoss.toFixed(2)}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span className="form-label">Profit Factor</span>
+                                            <span className="symbol-cell">{results.profitFactor.toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="card">
+                                    <h3 className="section-title">Recent Trades</h3>
+                                    <div className="table-container" style={{ maxHeight: '300px', overflow: 'auto' }}>
+                                        <table className="data-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Entry Date</th>
+                                                    <th>Exit Date</th>
+                                                    <th>P&L</th>
+                                                    <th>%</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {results.trades.slice(-10).reverse().map((trade, i) => (
+                                                    <tr key={i}>
+                                                        <td>{trade.entryDate}</td>
+                                                        <td>{trade.exitDate}</td>
+                                                        <td className={trade.pnl >= 0 ? 'price-positive' : 'price-negative'}>
+                                                            ₹{trade.pnl.toFixed(2)}
+                                                        </td>
+                                                        <td className={trade.pnlPercent >= 0 ? 'price-positive' : 'price-negative'}>
+                                                            {trade.pnlPercent.toFixed(2)}%
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // Paper Trading Component
+        function PaperTrading({ active, startTrading, indices, positions, setPositions, portfolioValue, setPortfolioValue, totalPnL, setTotalPnL }) {
+            const [orderForm, setOrderForm] = useState({
+                symbol: 'NIFTY 50',
+                quantity: 1,
+                orderType: 'buy',
+            });
+
+            useEffect(() => {
+                lucide.createIcons();
+            }, [positions]);
+
+            const executeOrder = (e) => {
+                e.preventDefault();
+                
+                const index = indices.find(i => i.symbol === orderForm.symbol);
+                if (!index) return;
+
+                const cost = index.price * orderForm.quantity;
+
+                if (orderForm.orderType === 'buy') {
+                    if (cost > portfolioValue) {
+                        alert('Insufficient funds!');
+                        return;
+                    }
+
+                    const newPosition = {
+                        id: Date.now(),
+                        symbol: orderForm.symbol,
+                        quantity: orderForm.quantity,
+                        entryPrice: index.price,
+                        currentPrice: index.price,
+                        pnl: 0,
+                        entryTime: new Date().toISOString(),
+                    };
+
+                    setPositions([...positions, newPosition]);
+                    setPortfolioValue(portfolioValue - cost);
+                } else {
+                    // Sell logic
+                    const position = positions.find(p => p.symbol === orderForm.symbol);
+                    if (!position || position.quantity < orderForm.quantity) {
+                        alert('Insufficient position to sell!');
+                        return;
+                    }
+
+                    const sellValue = index.price * orderForm.quantity;
+                    const positionPnL = (index.price - position.entryPrice) * orderForm.quantity;
+
+                    setPortfolioValue(portfolioValue + sellValue);
+                    setTotalPnL(totalPnL + positionPnL);
+
+                    if (position.quantity === orderForm.quantity) {
+                        setPositions(positions.filter(p => p.id !== position.id));
+                    } else {
+                        setPositions(positions.map(p => 
+                            p.id === position.id 
+                                ? { ...p, quantity: p.quantity - orderForm.quantity }
+                                : p
+                        ));
+                    }
+                }
+
+                setOrderForm({ ...orderForm, quantity: 1 });
+            };
+
+            return (
+                <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                        <h2 className="section-title">
+                            <i data-lucide="wallet"></i>
+                            Paper Trading
+                        </h2>
+                        {!active && (
+                            <button className="btn btn-primary" onClick={startTrading}>
+                                <i data-lucide="play"></i>
+                                Start Paper Trading
+                            </button>
+                        )}
+                    </div>
+
+                    {!active ? (
+                        <div className="card" style={{ textAlign: 'center', padding: '60px' }}>
+                            <h3 style={{ marginBottom: '16px', color: 'var(--text-secondary)' }}>
+                                Paper Trading Not Active
+                            </h3>
+                            <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
+                                Start paper trading to practice with virtual money and test your strategies
+                            </p>
+                            <button className="btn btn-primary" onClick={startTrading}>
+                                <i data-lucide="play"></i>
+                                Start Now
+                            </button>
+                        </div>
+                    ) : (
+                        <div>
+                            <div className="grid-2" style={{ marginBottom: '24px' }}>
+                                <div className="card">
+                                    <h3 className="section-title">Place Order</h3>
+                                    <form onSubmit={executeOrder}>
+                                        <div className="strategy-form">
+                                            <div className="form-group">
+                                                <label className="form-label">Symbol</label>
+                                                <select
+                                                    className="form-select"
+                                                    value={orderForm.symbol}
+                                                    onChange={(e) => setOrderForm({ ...orderForm, symbol: e.target.value })}
+                                                >
+                                                    {indices.map(index => (
+                                                        <option key={index.symbol} value={index.symbol}>
+                                                            {index.symbol} (₹{index.price.toFixed(2)})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            <div className="form-group">
+                                                <label className="form-label">Order Type</label>
+                                                <select
+                                                    className="form-select"
+                                                    value={orderForm.orderType}
+                                                    onChange={(e) => setOrderForm({ ...orderForm, orderType: e.target.value })}
+                                                >
+                                                    <option value="buy">Buy</option>
+                                                    <option value="sell">Sell</option>
+                                                </select>
+                                            </div>
+
+                                            <div className="form-group">
+                                                <label className="form-label">Quantity</label>
+                                                <input
+                                                    type="number"
+                                                    className="form-input"
+                                                    value={orderForm.quantity}
+                                                    onChange={(e) => setOrderForm({ ...orderForm, quantity: parseInt(e.target.value) })}
+                                                    min="1"
+                                                    required
+                                                />
+                                            </div>
+
+                                            <button 
+                                                type="submit" 
+                                                className={`btn ${orderForm.orderType === 'buy' ? 'btn-primary' : 'btn-danger'}`}
+                                            >
+                                                {orderForm.orderType === 'buy' ? 'Buy' : 'Sell'}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <div className="card">
+                                    <h3 className="section-title">Account Summary</h3>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span className="form-label">Available Cash</span>
+                                            <span className="symbol-cell">₹{portfolioValue.toLocaleString('en-IN')}</span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span className="form-label">Total P&L</span>
+                                            <span className={totalPnL >= 0 ? 'price-positive' : 'price-negative'}>
+                                                ₹{totalPnL.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                            </span>
+                                        </div>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span className="form-label">Active Positions</span>
+                                            <span className="symbol-cell">{positions.length}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="card">
+                                <h3 className="section-title">Active Positions</h3>
+                                {positions.length === 0 ? (
+                                    <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                                        No active positions
+                                    </div>
+                                ) : (
+                                    <div className="table-container">
+                                        <table className="data-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Symbol</th>
+                                                    <th>Quantity</th>
+                                                    <th>Entry Price</th>
+                                                    <th>Current Price</th>
+                                                    <th>P&L</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {positions.map(position => {
+                                                    const currentIndex = indices.find(i => i.symbol === position.symbol);
+                                                    const currentPrice = currentIndex ? currentIndex.price : position.entryPrice;
+                                                    const pnl = (currentPrice - position.entryPrice) * position.quantity;
+
+                                                    return (
+                                                        <tr key={position.id}>
+                                                            <td className="symbol-cell">{position.symbol}</td>
+                                                            <td>{position.quantity}</td>
+                                                            <td>₹{position.entryPrice.toFixed(2)}</td>
+                                                            <td>₹{currentPrice.toFixed(2)}</td>
+                                                            <td className={pnl >= 0 ? 'price-positive' : 'price-negative'}>
+                                                                ₹{pnl.toFixed(2)}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // Forward Test Component
+        function ForwardTest({ strategies, indices }) {
+            const [selectedStrategy, setSelectedStrategy] = useState(null);
+            const [isRunning, setIsRunning] = useState(false);
+            const [testResults, setTestResults] = useState(null);
+
+            useEffect(() => {
+                lucide.createIcons();
+            }, [testResults]);
+
+            const startForwardTest = () => {
+                if (!selectedStrategy) return;
+                
+                setIsRunning(true);
+                
+                // Simulate forward testing
+                setTimeout(() => {
+                    setTestResults({
+                        trades: 15,
+                        wins: 9,
+                        losses: 6,
+                        winRate: 60,
+                        totalPnL: 45230.50,
+                        avgWin: 7234.20,
+                        avgLoss: -3421.80,
+                    });
+                    setIsRunning(false);
+                }, 2000);
+            };
+
+            return (
+                <div>
+                    <h2 className="section-title">
+                        <i data-lucide="play"></i>
+                        Forward Testing
+                    </h2>
+
+                    <div className="alert alert-success">
+                        <i data-lucide="info"></i>
+                        Forward testing runs your strategy on live market data without executing real trades
+                    </div>
+
+                    <div className="card" style={{ marginBottom: '24px' }}>
+                        <h3 className="section-title">Configure Forward Test</h3>
+                        <div className="strategy-form">
+                            <div className="form-group">
+                                <label className="form-label">Select Strategy</label>
+                                <select
+                                    className="form-select"
+                                    onChange={(e) => setSelectedStrategy(strategies.find(s => s.id === parseInt(e.target.value)))}
+                                    defaultValue=""
+                                >
+                                    <option value="" disabled>Choose a strategy</option>
+                                    {strategies.map(strategy => (
+                                        <option key={strategy.id} value={strategy.id}>
+                                            {strategy.name} ({strategy.type})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <button
+                                className="btn btn-primary"
+                                onClick={startForwardTest}
+                                disabled={!selectedStrategy || isRunning}
+                            >
+                                {isRunning ? (
+                                    <>
+                                        <div className="spinner" style={{ width: '16px', height: '16px' }}></div>
+                                        Running...
+                                    </>
+                                ) : (
+                                    <>
+                                        <i data-lucide="play"></i>
+                                        Start Forward Test
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
+                    {testResults && (
+                        <div>
+                            <div className="grid-3" style={{ marginBottom: '24px' }}>
+                                <div className="card metric-card">
+                                    <div className="metric-value price-positive">₹{testResults.totalPnL.toLocaleString('en-IN')}</div>
+                                    <div className="metric-label">Total P&L</div>
+                                </div>
+                                <div className="card metric-card">
+                                    <div className="metric-value">{testResults.winRate}%</div>
+                                    <div className="metric-label">Win Rate</div>
+                                </div>
+                                <div className="card metric-card">
+                                    <div className="metric-value">{testResults.trades}</div>
+                                    <div className="metric-label">Total Trades</div>
+                                </div>
+                            </div>
+
+                            <div className="card">
+                                <h3 className="section-title">Live Performance Tracking</h3>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span className="form-label">Winning Trades</span>
+                                        <span className="price-positive">{testResults.wins}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span className="form-label">Losing Trades</span>
+                                        <span className="price-negative">{testResults.losses}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span className="form-label">Average Win</span>
+                                        <span className="price-positive">₹{testResults.avgWin.toFixed(2)}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                        <span className="form-label">Average Loss</span>
+                                        <span className="price-negative">₹{testResults.avgLoss.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // Render App
+        ReactDOM.render(<TradingPlatform />, document.getElementById('root'));
+
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
